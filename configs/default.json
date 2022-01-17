@@ -1,0 +1,13 @@
+{
+    "trainer": {
+        "epochs": 50,  
+        "ckpt_dir": "/checkpoints",
+        "save_freq": 10,
+        "verbosity": 2,
+        "monitor": "val_metric",
+        "monitor_mode": "min"
+    },
+    "visualization":{
+        "tensorboardX": true
+    }
+}
