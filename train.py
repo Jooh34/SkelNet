@@ -13,8 +13,7 @@ def train(config):
     trainer = skel_trainer(config)
     trainer.train()
 
-    net = skel_net()
-    net.summary()
+    net = skel_net(config)
 
 def parse_config(args):
     config = copy.deepcopy(json.load(open(args.config), object_hook=lambda d: Namespace(**d)))

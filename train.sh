@@ -1,0 +1,1 @@
+python train.py -c configs/default.json
