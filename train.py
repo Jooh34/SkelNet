@@ -1,51 +1,60 @@
-import argparse
 import os
 import json
 import copy
 import shutil
-from types import SimpleNamespace as Namespace
 import torch
+from types import SimpleNamespace as Namespace
+import torch.nn as nn
+
 from model.skel import skel_net
+from data.skel_dataset import SkelDataset
+from utils.bvh import Bvh
+from utils.retarget import set_up, show_skeleton, show_difference_2d
 
-from trainer.trainer import skel_trainer 
+from torch.autograd import Variable
 
-def train(config):
-    trainer = skel_trainer(config)
-    trainer.train()
+learning_rate = 0.0001
+training_epochs = 500
+batch_size = 1024
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+num_joint = 19
 
-    net = skel_net(config)
 
-def parse_config(args):
-    config = copy.deepcopy(json.load(open(args.config), object_hook=lambda d: Namespace(**d)))
-    return config
+def train():
+    model = skel_net(num_joint).to(device)
+
+    loss = nn.MSELoss(reduction='sum')
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+    dataset = SkelDataset()
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    set_up()
+
+    for epoch in range(training_epochs):
+        for X, Y in dataloader:
+            X = X.to(device)
+            Y = Y.to(device)
+
+            optimizer.zero_grad()
+            hypothesis, fake_positions = model(X)
+            cost = loss(hypothesis, Y)
+            # print(hypothesis[0])
+            # print(Y[0])
+            cost.backward()
+            optimizer.step()
+
+        if epoch%300 == 0:
+            show_difference_2d(Y[0], hypothesis[0])
+            show_skeleton(fake_positions[0], str(epoch))
+
+        print('[Epoch: {:>4}] cost = {:>.9}'.format(epoch + 1, cost))
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config',
-        default='./configs/default.json',
-        type=str, help='config file (default: default.json)'
-    )
-
     seed = 1
     torch.manual_seed(seed)
 
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
-
-    args = parser.parse_args()
-    if args.config:
-        config = parse_config(args)
-    else:
-        AssertionError("missing config file path.")
-
-    if os.path.exists(config.trainer.ckpt_dir) and 'debug' not in args.name and args.resume is None:
-        allow_cover = input('Model file detected, do you want to replace it? (Y/N)').lower()
-        if allow_cover == 'n':
-            exit()
-        else:
-            shutil.rmtree(config.trainer.ckpt_dir, ignore_errors=True)
-
-    train(config)
+    train()
 
 if __name__ == '__main__':
     main()

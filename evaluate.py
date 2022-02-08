@@ -53,9 +53,8 @@ def main():
 
     # poses_2d_root = np.where(np.isfinite(poses_2d_root), poses_2d_root, 0)
     poses_2d_root = torch.from_numpy(np.array(poses_2d)).unsqueeze(0).float().to(device)
-    skel = skel_net(config)
-    skel.forward(poses_2d_root)
-    print(skel)
+    skel = skel_net(config).cuda()
+    result = skel.forward(poses_2d_root)
 
     # run model
     # model.forward()

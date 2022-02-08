@@ -10,7 +10,7 @@ def parse_openpose(openpose_json):
     locations = []
     confidences = []
     for i in range(len(keypoints)):
-        locations.append(keypoints[i][:2])
+        locations.append((keypoints[i][:2]).astype(np.float32) / 1080.)
         confidences.append(keypoints[i][2])
-
+    
     return np.array(locations), np.array(confidences)
