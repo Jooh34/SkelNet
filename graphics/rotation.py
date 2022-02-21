@@ -38,4 +38,36 @@ def quaternion_to_matrix(quaternions: torch.Tensor) -> torch.Tensor:
         ),
         -1,
     )
+
     return o.reshape(quaternions.shape[:-1] + (4, 4))
+
+def get_identity_matrix(quaternions: torch.Tensor) -> torch.Tensor:
+    B = quaternions.shape[:-1]
+    device = quaternions.device
+
+    o = torch.tensor([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ], dtype=torch.float32).unsqueeze(dim=0)
+
+    o = o.repeat(B[0],1,1).to(device)
+    return o
+
+def get_batch_translation_matrix(B, position) -> torch.Tensor:
+    device = position.device
+    zeros = torch.zeros(B).to(device)
+    ones = torch.ones(B).to(device)
+
+    m = torch.stack(
+        (
+            ones, zeros, zeros, position[:,0],
+            zeros, ones, zeros, position[:,1],
+            zeros, zeros, ones, position[:,2],
+            zeros, zeros, zeros, ones,
+        ),
+        -1,
+    )
+
+    return m.reshape((B,4,4))

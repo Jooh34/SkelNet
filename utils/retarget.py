@@ -152,12 +152,10 @@ def show_difference_2d(Y, fake_Y):
     fake_Y_np = fake_Y_np.reshape((17,2))
 
     interp =  Y_np[0] + (Y_np[9]-Y_np[0])/2
-    print(interp)
     a = np.concatenate((Y_np[:9, :], np.array([interp, interp])), axis=0)
     Y_np = np.concatenate((a, Y_np[9:,:]), axis=0)
 
     interp =  fake_Y_np[0] + (fake_Y_np[9]-fake_Y_np[0])/2
-    print(interp)
     a = np.concatenate((fake_Y_np[:9, :], np.array([interp, interp])), axis=0)
     fake_Y_np = np.concatenate((a, fake_Y_np[9:,:]), axis=0)
 

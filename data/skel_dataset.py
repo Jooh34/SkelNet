@@ -48,9 +48,22 @@ class SkelDataset(torch.utils.data.Dataset):
 
                 # confidence[15] = confidence[22]
                 # confidence[16] = confidence[19]
-                confidence = confidence[:17]
+                real_confidence = np.zeros((17,2), dtype=np.float32)
+                for i in range(len(openpose_to_myskel)):
+                    real_confidence[i] = confidence[openpose_to_myskel[i]]
+
+                no_conf = 0
+                for c in range(len(real_confidence)):
+                    if real_confidence[c][0] == 0 or real_confidence[c][1] == 0:
+                        no_conf = 1
+
+                if no_conf:
+                    continue
+                        
                 self.pose_data.append(np.reshape(real_pose, (34)))
                 # confidence_batch.append(confidence)
+
+        print(len(self.pose_data))
 
     def __len__(self):
         return len(self.pose_data)
